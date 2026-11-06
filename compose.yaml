@@ -7,7 +7,7 @@ services:
     init: true
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${WDS_PORT:-4173}:4173"
+      - "${WDS_BIND_ADDRESS:-127.0.0.1}:${WDS_PORT:-4173}:4173"
     read_only: true
     tmpfs:
       - /tmp:rw,noexec,nosuid,size=16m
