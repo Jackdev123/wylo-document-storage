@@ -1,0 +1,12 @@
+{
+  "name": "wylo-document-storage",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A local-first encrypted document, email, and report vault.",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
