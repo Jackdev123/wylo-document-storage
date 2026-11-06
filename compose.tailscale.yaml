@@ -1,0 +1,7 @@
+services:
+  wds:
+    environment:
+      TLS_CERT_FILE: /certs/wds.crt
+      TLS_KEY_FILE: /certs/wds.key
+    volumes:
+      - ./certs:/certs:ro

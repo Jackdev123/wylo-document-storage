@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { createServer as createHttpsServer } from "node:https";
 import { readFile } from "node:fs/promises";
 import { extname, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,7 +10,7 @@ const host = process.env.HOST || "127.0.0.1";
 const allowedFiles = new Set(["index.html", "styles.css", "app.js"]);
 const contentTypes = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8" };
 
-const server = createServer(async (request, response) => {
+const handleRequest = async (request, response) => {
   if (request.method !== "GET" && request.method !== "HEAD") {
     response.writeHead(405, { "Content-Type": "text/plain; charset=utf-8", "Allow": "GET, HEAD", "Cache-Control": "no-store" });
     response.end("Method not allowed");
@@ -54,7 +55,17 @@ const server = createServer(async (request, response) => {
     response.writeHead(500, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
     response.end("Could not serve the application file");
   }
-});
+};
+
+const certFile = process.env.TLS_CERT_FILE;
+const keyFile = process.env.TLS_KEY_FILE;
+if (Boolean(certFile) !== Boolean(keyFile)) {
+  throw new Error("Set both TLS_CERT_FILE and TLS_KEY_FILE to enable HTTPS.");
+}
+
+const server = certFile
+  ? createHttpsServer({ cert: await readFile(certFile), key: await readFile(keyFile) }, handleRequest)
+  : createServer(handleRequest);
 
 server.on("error", error => {
   console.error("WDS local server failed:", error.message);
@@ -63,6 +74,6 @@ server.on("error", error => {
 
 server.listen(port, host, () => {
   const displayHost = host === "0.0.0.0" ? "127.0.0.1" : host;
-  console.log(`WDS is running at http://${displayHost}:${port}`);
+  console.log(`WDS is running at ${certFile ? "https" : "http"}://${displayHost}:${port}`);
   console.log("This server serves the app only; vault data stays in your browser.");
 });
